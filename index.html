@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheSusie FashionMemo - Interactive Reader</title>
+    <style>
+        /* Console chic styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #0a0a0a;
+            color: #00ff41;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #111;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .title {
+            color: #00ff41;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 3px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-button {
+            background-color: #222;
+            color: #00ff41;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background-color: #333;
+            border-color: #00ff41;
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+        }
+
+        .nav-button:disabled {
+            color: #555;
+            cursor: not-allowed;
+            border-color: #333;
+        }
+
+        .page-info {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .content {
+            min-height: 400px;
+            padding: 20px;
+            background-color: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 3px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #ffff00;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 25px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #444;
+        }
+
+        .paragraph {
+            margin-bottom: 15px;
+            text-align: justify;
+            padding: 8px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .paragraph.highlighted {
+            background-color: #2a2a2a;
+            border: 1px solid #555;
+            box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+        }
+
+        .clickable-word {
+            color: #00ff41;
+            cursor: pointer;
+            text-decoration: none;
+            border-bottom: 1px dotted transparent;
+            transition: all 0.2s;
+        }
+
+        .clickable-word:hover {
+            border-bottom-color: #00ff41;
+            text-shadow: 0 0 3px rgba(0, 255, 65, 0.5);
+        }
+
+        .toc {
+            background-color: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 3px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .toc-title {
+            color: #ffff00;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .toc-item {
+            display: block;
+            color: #00ff41;
+            text-decoration: none;
+            padding: 5px 10px;
+            margin: 2px 0;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .toc-item:hover {
+            background-color: #333;
+            text-shadow: 0 0 3px rgba(0, 255, 65, 0.5);
+        }
+
+        .query-results {
+            background-color: #0f0f0f;
+            border: 1px solid #555;
+            border-radius: 3px;
+            padding: 20px;
+        }
+
+        .query-title {
+            color: #ffff00;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .query-paragraph {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 2px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .query-paragraph:hover {
+            border-color: #00ff41;
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
+        }
+
+        .query-highlight {
+            background-color: #444;
+            color: #ffff00;
+            padding: 1px 2px;
+            border-radius: 1px;
+        }
+
+        .query-title .query-highlight {
+            background-color: #444 !important;
+            color: #ffff00 !important;
+            padding: 2px 4px;
+            border-radius: 2px;
+            border: 1px solid #666;
+        }
+
+        .result-id {
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            background-color: #333;
+            color: #888;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 2px;
+            border: 1px solid #555;
+            font-family: monospace;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+        }
+
+        .error {
+            color: #ff4444;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">TheSusie FashionMemo</div>
+            <div class="subtitle">Interactive Console Reader - by Todd Perry</div>
+        </div>
+
+        <div class="navigation">
+            <div class="nav-left">
+                <div class="page-info" id="pageInfo">Loading...</div>
+            </div>
+            <div class="nav-right">
+                <button class="nav-button" id="contentsBtn" onclick="showContents()">CONTENTS</button>
+                <button class="nav-button" id="prevBtn" onclick="navigatePage('prev')">← PREV</button>
+                <button class="nav-button" id="nextBtn" onclick="navigatePage('next')">NEXT →</button>
+                <button class="nav-button" id="endingBtn" onclick="navigatePage('last')">ENDING</button>
+            </div>
+        </div>
+
+        <div class="content" id="content">
+            <div class="loading">Loading content...</div>
+        </div>
+
+        <!-- Footer navigation - same as header -->
+        <div class="navigation">
+            <div class="nav-left">
+                <div class="page-info" id="pageInfoFooter">Loading...</div>
+            </div>
+            <div class="nav-right">
+                <button class="nav-button" id="contentsBtnFooter" onclick="showContents()">CONTENTS</button>
+                <button class="nav-button" id="prevBtnFooter" onclick="navigatePage('prev')">← PREV</button>
+                <button class="nav-button" id="nextBtnFooter" onclick="navigatePage('next')">NEXT →</button>
+                <button class="nav-button" id="endingBtnFooter" onclick="navigatePage('last')">ENDING</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentData = null;
+        let currentPageId = null;
+        let currentView = 'page'; // 'page', 'contents', 'query'
+        let highlightState = null; // {paragraphId: string, queryWord: string}
+
+        // Initialize the application
+        async function init() {
+            try {
+                // Load all required data files
+                const [step2Data, step3Data, step4Data] = await Promise.all([
+                    fetch('fate_parse_step2.json').then(r => r.json()),
+                    fetch('fate_parse_step3.json').then(r => r.json()),
+                    fetch('fate_parse_step4.json').then(r => r.json())
+                ]);
+
+                currentData = {
+                    step2: step2Data,
+                    step3: step3Data,
+                    step4: step4Data
+                };
+
+                // Start with first page
+                const firstPageId = step4Data.page_order[0];
+                showPage(firstPageId);
+
+            } catch (error) {
+                document.getElementById('content').innerHTML = 
+                    '<div class="error">Error loading data files. Please ensure all JSON files are present.</div>';
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // Show a specific page
+        function showPage(pageId) {
+            if (!currentData || !currentData.step4.pages[pageId]) {
+                document.getElementById('content').innerHTML = 
+                    '<div class="error">Page not found.</div>';
+                return;
+            }
+
+            currentPageId = pageId;
+            currentView = 'page';
+            
+            const page = currentData.step4.pages[pageId];
+            const pageOrder = currentData.step4.page_order;
+            const currentIndex = pageOrder.indexOf(pageId);
+
+            // Update navigation
+            updateNavigation(currentIndex, pageOrder.length);
+
+            // Render page content
+            let contentHtml = '';
+            
+            for (const item of page.content) {
+                if (item.type === 'table_of_contents') {
+                    contentHtml += renderTableOfContents(item.content);
+                } else if (item.type === 'section_title') {
+                    contentHtml += `<div class="section-title">${escapeHtml(item.content.title)}</div>`;
+                } else if (item.type === 'paragraph') {
+                    const paraId = item.source_node_id;
+                    const isHighlighted = highlightState && highlightState.paragraphId === paraId;
+                    const highlightClass = isHighlighted ? ' highlighted' : '';
+                    
+                    if (isHighlighted) {
+                        console.log('Highlighting paragraph:', paraId, 'with word:', highlightState.queryWord); // Debug
+                    }
+                    
+                    let paragraphText = item.content.text;
+                    let finalText;
+                    
+                    // Apply query word highlighting if this paragraph should be highlighted
+                    if (isHighlighted && highlightState.queryWord) {
+                        paragraphText = highlightWordInText(paragraphText, highlightState.queryWord);
+                        // For highlighted paragraphs, apply clickable word rendering AFTER query highlighting
+                        finalText = renderClickableTextWithExistingHighlights(paragraphText);
+                    } else {
+                        finalText = renderClickableText(paragraphText);
+                    }
+                    
+                    contentHtml += `<div class="paragraph${highlightClass}" data-para-id="${paraId}">${finalText}</div>`;
+                }
+            }
+
+            document.getElementById('content').innerHTML = contentHtml;
+        }
+
+        // Render table of contents
+        function renderTableOfContents(tocData) {
+            let html = '<div class="toc">';
+            html += `<div class="toc-title">${escapeHtml(tocData.title)}</div>`;
+            
+            for (const section of tocData.sections) {
+                // Escape JavaScript strings properly for onclick attribute
+                const escapedPageId = section.page_id.replace(/'/g, "\\'");
+                const escapedSectionName = section.section_name.replace(/'/g, "\\'");
+                html += `<a href="#" class="toc-item" onclick="navigateToPageWithSectionScroll('${escapedPageId}', '${escapedSectionName}')">${escapeHtml(section.section_name)} (page ${section.page_number})</a>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        // Render text with clickable words
+        function renderClickableText(text) {
+            const words = text.split(/(\s+)/);
+            const stopWords = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with']);
+            
+            return words.map(word => {
+                if (/^\s+$/.test(word)) {
+                    return word; // whitespace
+                }
+                
+                const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+                if (cleanWord.length > 2 && !stopWords.has(cleanWord) && currentData.step3.word_index[cleanWord]) {
+                    return `<span class="clickable-word" onclick="showWordQuery('${cleanWord}')">${escapeHtml(word)}</span>`;
+                }
+                
+                return escapeHtml(word);
+            }).join('');
+        }
+
+        // Render text with clickable words, preserving existing HTML highlights
+        function renderClickableTextWithExistingHighlights(htmlText) {
+            const stopWords = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with']);
+            
+            // Split on HTML tags to preserve them
+            const parts = htmlText.split(/(<[^>]*>)/);
+            
+            return parts.map(part => {
+                // If this part is an HTML tag, return it unchanged
+                if (part.startsWith('<') && part.endsWith('>')) {
+                    return part;
+                }
+                
+                // Otherwise, process text content for clickable words
+                const words = part.split(/(\s+)/);
+                return words.map(word => {
+                    if (/^\s+$/.test(word)) {
+                        return word; // whitespace
+                    }
+                    
+                    const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+                    if (cleanWord.length > 2 && !stopWords.has(cleanWord) && currentData.step3.word_index[cleanWord]) {
+                        return `<span class="clickable-word" onclick="showWordQuery('${cleanWord}')">${escapeHtml(word)}</span>`;
+                    }
+                    
+                    return escapeHtml(word);
+                }).join('');
+            }).join('');
+        }
+
+        // Show word query results
+        function showWordQuery(word) {
+            currentView = 'query';
+            
+            const nodeIds = currentData.step3.word_index[word] || [];
+            const paragraphIds = nodeIds.filter(id => id.startsWith('para_'));
+            
+            let contentHtml = `<div class="query-results">`;
+            const highlightedWord = `<span class="query-highlight">${word}</span>`;
+            contentHtml += `<div class="query-title">Found: ${highlightedWord} (${paragraphIds.length} matches)</div>`;
+            
+            for (let i = 0; i < paragraphIds.length; i++) {
+                const paraId = paragraphIds[i];
+                const paragraph = findParagraphById(paraId);
+                if (paragraph) {
+                    const pageId = currentData.step3.paragraph_to_page_mapping[paraId];
+                    const highlightedText = highlightWordInText(paragraph.text, word);
+                    const resultId = `R${String(i + 1).padStart(3, '0')}`;
+                    
+                    contentHtml += `<div class="query-paragraph" onclick="navigateToPageWithHighlight('${pageId}', '${paraId}', '${word}')">
+                        ${highlightedText}
+                        <div class="result-id">${resultId}</div>
+                    </div>`;
+                }
+            }
+            
+            contentHtml += '</div>';
+            document.getElementById('content').innerHTML = contentHtml;
+            
+            // Update navigation for query view
+            updateNavigationForQuery(word, paragraphIds.length);
+        }
+
+        // Highlight specific word in text
+        function highlightWordInText(text, targetWord) {
+            const regex = new RegExp(`\\b(${escapeRegex(targetWord)})\\b`, 'gi');
+            return text.replace(regex, '<span class="query-highlight">$1</span>');
+        }
+
+        // Escape special regex characters
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Find paragraph by ID in step2 data
+        function findParagraphById(paraId) {
+            for (const sectionData of Object.values(currentData.step2.sections)) {
+                for (const paragraph of sectionData.paragraphs) {
+                    if (paragraph.id === paraId) {
+                        return paragraph;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Navigation functions
+        function navigatePage(direction) {
+            const pageOrder = currentData.step4.page_order;
+            const currentIndex = pageOrder.indexOf(currentPageId);
+            
+            let newIndex;
+            switch (direction) {
+                case 'prev':
+                    newIndex = Math.max(0, currentIndex - 1);
+                    break;
+                case 'next':
+                    newIndex = Math.min(pageOrder.length - 1, currentIndex + 1);
+                    break;
+                case 'last':
+                    newIndex = pageOrder.length - 1;
+                    break;
+                default:
+                    return;
+            }
+            
+            highlightState = null; // Clear highlighting when navigating normally
+            showPage(pageOrder[newIndex]);
+        }
+
+        function navigateToPage(pageId) {
+            highlightState = null; // Clear any previous highlighting
+            showPage(pageId);
+        }
+
+        function navigateToPageWithHighlight(pageId, paragraphId, queryWord) {
+            console.log('Navigating with highlight:', {pageId, paragraphId, queryWord}); // Debug
+            highlightState = {
+                paragraphId: paragraphId,
+                queryWord: queryWord
+            };
+            showPage(pageId);
+            
+            // Scroll to highlighted paragraph after a brief delay
+            setTimeout(() => {
+                const targetParagraph = document.querySelector(`[data-para-id="${paragraphId}"]`);
+                if (targetParagraph) {
+                    console.log('Found target paragraph, scrolling'); // Debug
+                    targetParagraph.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                } else {
+                    console.log('Target paragraph not found:', paragraphId); // Debug
+                }
+            }, 100);
+        }
+
+        function navigateToPageWithSectionScroll(pageId, sectionName) {
+            console.log('TOC Navigation:', {pageId, sectionName}); // Debug
+            highlightState = null; // Clear any previous highlighting
+            showPage(pageId);
+            
+            // Scroll to section title after a brief delay
+            setTimeout(() => {
+                // Find the section title element
+                const sectionTitles = document.querySelectorAll('.section-title');
+                let targetSection = null;
+                
+                console.log('Looking for section:', sectionName); // Debug
+                console.log('Available sections:', Array.from(sectionTitles).map(el => el.textContent.trim())); // Debug
+                
+                for (const titleElement of sectionTitles) {
+                    if (titleElement.textContent.trim() === sectionName) {
+                        targetSection = titleElement;
+                        break;
+                    }
+                }
+                
+                if (targetSection) {
+                    console.log('Found section, scrolling'); // Debug
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'  // Align to top of viewport
+                    });
+                } else {
+                    console.log('Section not found, scrolling to top'); // Debug
+                    // If section title not found on this page, scroll to top
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+        }
+
+        function showContents() {
+            highlightState = null; // Clear highlighting when going to contents
+            navigateToPage(currentData.step4.page_order[0]); // First page has TOC
+        }
+
+        // Update navigation buttons
+        function updateNavigation(currentIndex, totalPages) {
+            const pageText = `Page ${currentIndex + 1} of ${totalPages}`;
+            document.getElementById('pageInfo').textContent = pageText;
+            document.getElementById('pageInfoFooter').textContent = pageText;
+            
+            const isPrevDisabled = currentIndex === 0;
+            const isNextDisabled = currentIndex === totalPages - 1;
+            
+            document.getElementById('prevBtn').disabled = isPrevDisabled;
+            document.getElementById('nextBtn').disabled = isNextDisabled;
+            document.getElementById('prevBtnFooter').disabled = isPrevDisabled;
+            document.getElementById('nextBtnFooter').disabled = isNextDisabled;
+        }
+
+        function updateNavigationForQuery(word, resultCount) {
+            // Truncate word to 12 characters with ellipsis if needed
+            const displayWord = word.length > 12 ? word.substring(0, 12) + '...' : word;
+            const queryText = `Found: ${displayWord} (${resultCount})`;
+            document.getElementById('pageInfo').textContent = queryText;
+            document.getElementById('pageInfoFooter').textContent = queryText;
+            
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('prevBtnFooter').disabled = true;
+            document.getElementById('nextBtnFooter').disabled = true;
+        }
+
+        // Utility functions
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
