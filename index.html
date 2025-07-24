@@ -36,6 +36,7 @@
             margin-bottom: 30px;
             border-bottom: 1px solid #333;
             padding-bottom: 20px;
+            position: relative;
         }
 
         .title {
@@ -97,9 +98,59 @@
             border-color: #333;
         }
 
-        .page-info {
-            color: #888;
+        .page-info-sticker {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: #222;
+            color: #00ff41;
+            padding: 8px 12px;
+            border: 1px solid #555;
+            border-radius: 4px;
             font-size: 12px;
+            font-family: inherit;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-input {
+            background-color: #222;
+            color: #00ff41;
+            border: 1px solid #555;
+            padding: 6px 10px;
+            font-family: inherit;
+            font-size: 12px;
+            border-radius: 2px;
+            width: 150px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00ff41;
+            box-shadow: 0 0 3px rgba(0, 255, 65, 0.3);
+        }
+
+        .search-button {
+            background-color: #222;
+            color: #00ff41;
+            border: 1px solid #555;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .search-button:hover {
+            background-color: #333;
+            border-color: #00ff41;
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
         }
 
         .content {
@@ -271,11 +322,15 @@
         <div class="header">
             <div class="title">TheSusie FashionMemo 3.01</div>
             <div class="subtitle">Interactive Console Reader - by Todd Perry</div>
+            <div class="page-info-sticker" id="pageInfo">Loading...</div>
         </div>
 
         <div class="navigation">
             <div class="nav-left">
-                <div class="page-info" id="pageInfo">Loading...</div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="search word..." />
+                    <button class="search-button" onclick="performSearch()">SEARCH</button>
+                </div>
             </div>
             <div class="nav-right">
                 <button class="nav-button" id="contentsBtn" onclick="showContents()">CONTENTS</button>
@@ -292,7 +347,10 @@
         <!-- Footer navigation - same as header -->
         <div class="navigation">
             <div class="nav-left">
-                <div class="page-info" id="pageInfoFooter">Loading...</div>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInputFooter" placeholder="search word..." />
+                    <button class="search-button" onclick="performSearch('footer')">SEARCH</button>
+                </div>
             </div>
             <div class="nav-right">
                 <button class="nav-button" id="contentsBtnFooter" onclick="showContents()">CONTENTS</button>
@@ -611,7 +669,6 @@
         function updateNavigation(currentIndex, totalPages) {
             const pageText = `Page ${currentIndex + 1} of ${totalPages}`;
             document.getElementById('pageInfo').textContent = pageText;
-            document.getElementById('pageInfoFooter').textContent = pageText;
             
             const isPrevDisabled = currentIndex === 0;
             const isNextDisabled = currentIndex === totalPages - 1;
@@ -627,7 +684,6 @@
             const displayWord = word.length > 12 ? word.substring(0, 12) + '...' : word;
             const queryText = `Found: ${displayWord} (${resultCount})`;
             document.getElementById('pageInfo').textContent = queryText;
-            document.getElementById('pageInfoFooter').textContent = queryText;
             
             document.getElementById('prevBtn').disabled = true;
             document.getElementById('nextBtn').disabled = true;
@@ -645,8 +701,36 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // Search functionality
+        function performSearch(source) {
+            const inputId = source === 'footer' ? 'searchInputFooter' : 'searchInput';
+            const searchWord = document.getElementById(inputId).value.trim().toLowerCase();
+            
+            if (searchWord.length > 2) {
+                showWordQuery(searchWord);
+                // Clear both search inputs
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchInputFooter').value = '';
+            }
+        }
+        
+        // Allow Enter key to trigger search
+        function setupSearchInputs() {
+            ['searchInput', 'searchInputFooter'].forEach(id => {
+                const input = document.getElementById(id);
+                input.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        performSearch(id === 'searchInputFooter' ? 'footer' : 'header');
+                    }
+                });
+            });
+        }
+
         // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            setupSearchInputs();
+        });
     </script>
 </body>
 </html>
