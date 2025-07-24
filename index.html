@@ -435,7 +435,11 @@
                     
                     // Apply query word highlighting if this paragraph should be highlighted
                     if (isHighlighted && highlightState.queryWord) {
-                        paragraphText = highlightWordInText(paragraphText, highlightState.queryWord);
+                        // Handle multiple words separated by spaces
+                        const queryWords = highlightState.queryWord.split(' ').filter(w => w.length > 0);
+                        queryWords.forEach(word => {
+                            paragraphText = highlightWordInText(paragraphText, word);
+                        });
                         // For highlighted paragraphs, apply clickable word rendering AFTER query highlighting
                         finalText = renderClickableTextWithExistingHighlights(paragraphText);
                     } else {
@@ -515,25 +519,62 @@
         }
 
         // Show word query results
-        function showWordQuery(word) {
+        function showWordQuery(query) {
             currentView = 'query';
             
-            const nodeIds = currentData.step3.word_index[word] || [];
-            const paragraphIds = nodeIds.filter(id => id.startsWith('para_'));
+            // Split query into individual words and clean them
+            const searchWords = query.toLowerCase().split(/\s+/)
+                .map(w => w.replace(/[^\w]/g, ''))
+                .filter(w => w.length > 2);
+            
+            if (searchWords.length === 0) {
+                return;
+            }
+            
+            // Find paragraphs that contain ALL search words
+            let matchingParagraphs = [];
+            
+            if (searchWords.length === 1) {
+                // Single word search - use existing index
+                const word = searchWords[0];
+                const nodeIds = currentData.step3.word_index[word] || [];
+                matchingParagraphs = nodeIds.filter(id => id.startsWith('para_'));
+            } else {
+                // Multiple words - find intersection
+                const allParagraphSets = searchWords.map(word => {
+                    const nodeIds = currentData.step3.word_index[word] || [];
+                    return new Set(nodeIds.filter(id => id.startsWith('para_')));
+                });
+                
+                // Find paragraphs that appear in all sets (intersection)
+                if (allParagraphSets.length > 0 && allParagraphSets[0].size > 0) {
+                    matchingParagraphs = Array.from(allParagraphSets[0]).filter(paraId => 
+                        allParagraphSets.every(set => set.has(paraId))
+                    );
+                }
+            }
+            
+            // Create highlighted display of search terms
+            const highlightedTerms = searchWords.map(word => 
+                `<span class="query-highlight">${word}</span>`
+            ).join(' ');
             
             let contentHtml = `<div class="query-results">`;
-            const highlightedWord = `<span class="query-highlight">${word}</span>`;
-            contentHtml += `<div class="query-title">Found:<br>${highlightedWord} (${paragraphIds.length} matches)</div>`;
+            contentHtml += `<div class="query-title">Found:<br>${highlightedTerms} (${matchingParagraphs.length} matches)</div>`;
             
-            for (let i = 0; i < paragraphIds.length; i++) {
-                const paraId = paragraphIds[i];
+            for (let i = 0; i < matchingParagraphs.length; i++) {
+                const paraId = matchingParagraphs[i];
                 const paragraph = findParagraphById(paraId);
                 if (paragraph) {
                     const pageId = currentData.step3.paragraph_to_page_mapping[paraId];
-                    const highlightedText = highlightWordInText(paragraph.text, word);
+                    // Highlight all search words in the text
+                    let highlightedText = paragraph.text;
+                    searchWords.forEach(word => {
+                        highlightedText = highlightWordInText(highlightedText, word);
+                    });
                     const resultId = `R${String(i + 1).padStart(3, '0')}`;
                     
-                    contentHtml += `<div class="query-paragraph" onclick="navigateToPageWithHighlight('${pageId}', '${paraId}', '${word}')">
+                    contentHtml += `<div class="query-paragraph" onclick="navigateToPageWithHighlight('${pageId}', '${paraId}', '${searchWords.join(' ')}')">
                         ${highlightedText}
                         <div class="result-id">${resultId}</div>
                     </div>`;
@@ -544,7 +585,7 @@
             document.getElementById('content').innerHTML = contentHtml;
             
             // Update navigation for query view
-            updateNavigationForQuery(word, paragraphIds.length);
+            updateNavigationForQuery(searchWords.join(' '), matchingParagraphs.length);
         }
 
         // Highlight specific word in text
@@ -704,10 +745,10 @@
         // Search functionality
         function performSearch(source) {
             const inputId = source === 'footer' ? 'searchInputFooter' : 'searchInput';
-            const searchWord = document.getElementById(inputId).value.trim().toLowerCase();
+            const searchQuery = document.getElementById(inputId).value.trim();
             
-            if (searchWord.length > 2) {
-                showWordQuery(searchWord);
+            if (searchQuery.length > 2) {
+                showWordQuery(searchQuery);
                 // Clear both search inputs
                 document.getElementById('searchInput').value = '';
                 document.getElementById('searchInputFooter').value = '';
