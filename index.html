@@ -523,7 +523,7 @@
             
             let contentHtml = `<div class="query-results">`;
             const highlightedWord = `<span class="query-highlight">${word}</span>`;
-            contentHtml += `<div class="query-title">Found: ${highlightedWord} (${paragraphIds.length} matches)</div>`;
+            contentHtml += `<div class="query-title">Found:<br>${highlightedWord} (${paragraphIds.length} matches)</div>`;
             
             for (let i = 0; i < paragraphIds.length; i++) {
                 const paraId = paragraphIds[i];
