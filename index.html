@@ -320,7 +320,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="title">TheSusie FashionMemo 3.01</div>
+            <div class="title">TheSusie FashionMemo 3.05</div>
             <div class="subtitle">Interactive Console Reader - by Todd Perry</div>
             <div class="page-info-sticker" id="pageInfo">Loading...</div>
         </div>
@@ -560,7 +560,7 @@
             ).join(' ');
             
             let contentHtml = `<div class="query-results">`;
-            contentHtml += `<div class="query-title">Found:<br>${highlightedTerms} (${matchingParagraphs.length} matches)</div>`;
+            contentHtml += `<div class="query-title">Found: ${highlightedTerms} (${matchingParagraphs.length} matches)</div>`;
             
             for (let i = 0; i < matchingParagraphs.length; i++) {
                 const paraId = matchingParagraphs[i];
@@ -723,8 +723,8 @@
         function updateNavigationForQuery(word, resultCount) {
             // Truncate word to 12 characters with ellipsis if needed
             const displayWord = word.length > 12 ? word.substring(0, 12) + '...' : word;
-            const queryText = `Found: ${displayWord} (${resultCount})`;
-            document.getElementById('pageInfo').textContent = queryText;
+            // Use innerHTML for sticker to support line break
+            document.getElementById('pageInfo').innerHTML = `Found:<br>${displayWord} (${resultCount})`;
             
             document.getElementById('prevBtn').disabled = true;
             document.getElementById('nextBtn').disabled = true;
